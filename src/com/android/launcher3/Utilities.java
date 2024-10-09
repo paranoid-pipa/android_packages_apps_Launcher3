@@ -32,6 +32,7 @@ import static co.aospa.launcher.OverlayCallbackImpl.KEY_WORKSPACE_LOCK;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
+import android.app.contextualsearch.ContextualSearchManager;
 import android.app.Person;
 import android.app.WallpaperManager;
 import android.content.Context;
@@ -61,6 +62,7 @@ import android.os.DeadObjectException;
 import android.os.Handler;
 import android.os.Message;
 import android.os.TransactionTooLargeException;
+import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -1048,5 +1050,25 @@ public final class Utilities {
     public static boolean showAllappsSuggestions(Context context) {
         SharedPreferences prefs = LauncherPrefs.getPrefs(context.getApplicationContext());
         return prefs.getBoolean(KEY_ALLAPPS_SUGGESTIONS, true);
+    }
+
+    public static boolean startContextualSearch(Context context, int entrypoint) {
+        Context appContext = context.getApplicationContext();
+        ContextualSearchManager contextualSearchManager = 
+            (ContextualSearchManager) appContext.getSystemService(Context.CONTEXTUAL_SEARCH_SERVICE);
+        if (contextualSearchManager == null || !isLongPressSearchEnabled(context)) {
+            return false;
+        }
+        try {
+            contextualSearchManager.startContextualSearch(entrypoint);
+            return true;
+        } catch (Exception e) {}
+        return false;
+    }
+    
+    public static boolean isLongPressSearchEnabled(Context context) {
+        return Settings.Secure.getInt(context.getContentResolver(),
+                Settings.Secure.SEARCH_ALL_ENTRYPOINTS_ENABLED, 1)
+                == 1;
     }
 }
